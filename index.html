@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DEV TAN PHAT — Secure Tools (Light · Sakura · TP Logo)</title>
+<meta name="color-scheme" content="light" />
+
+<!-- Favicon SVG (TP) -->
+<link rel="icon" type="image/svg+xml"
+  href="data:image/svg+xml;utf8,
+  <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>
+    <defs>
+      <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+        <stop offset='0' stop-color='%230ea5e9'/><stop offset='1' stop-color='%238b5cf6'/>
+      </linearGradient>
+    </defs>
+    <rect x='6' y='6' width='52' height='52' rx='12' fill='%23fff' stroke='%23e5e7eb'/>
+    <!-- T -->
+    <rect x='12' y='16' width='24' height='8' rx='4' fill='url(%23g)'/>
+    <rect x='21' y='24' width='6' height='24' rx='3' fill='url(%23g)'/>
+    <!-- P -->
+    <rect x='36' y='16' width='6' height='32' rx='3' fill='%2310b981'/>
+    <path d='M42 16h8c6 0 10 4 10 10s-4 10-10 10h-8V16Zm8 16c3.3 0 6-2.7 6-6s-2.7-6-6-6h-2v12h2z' fill='%230ea5e9'/>
+  </svg>" />
+
+<style>
+  /* ===== Tokens (Light-first) ===== */
+  :root{
+    --brand:#0ea5e9; --brand-2:#8b5cf6; --brand-3:#10b981;
+    --ink:#0f172a; --muted:#64748b; --surface:#ffffff; --surface-2:#f8fafc;
+    --ring: color-mix(in oklab, var(--brand) 28%, transparent);
+    --radius:16px; --shadow:0 12px 40px rgba(2,6,23,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink); background:
+      radial-gradient(1200px 600px at 10% -10%, #93c5fd33, transparent 60%),
+      radial-gradient(1000px 700px at 100% 0%, #c4b5fd33, transparent 60%),
+      var(--surface-2);
+    font:500 16px/1.55 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    overflow-x:hidden;
+  }
+
+  /* ===== Header ===== */
+  header{
+    position:sticky; top:0; z-index:40;
+    backdrop-filter: blur(10px) saturate(1.2);
+    background: linear-gradient(to bottom, #ffffffcc, #ffffff80, transparent);
+    border-bottom:1px solid #e5e7eb;
+  }
+  .container{max-width:1140px; margin:0 auto; padding:24px}
+  .brand{display:flex; align-items:center; gap:14px; padding:10px 24px 18px}
+
+  /* ===== TP Logo (animated, non-rotating LED) ===== */
+  .logo-wrap{position:relative; display:inline-grid; place-items:center}
+  .logo-link{display:grid; place-items:center; width:60px; aspect-ratio:1; border-radius:16px; position:relative; overflow:hidden;
+             background:#f1f5f9; box-shadow: inset 0 0 0 1px #e5e7eb, inset 0 28px 50px #e2e8f0;
+             text-decoration:none; animation: breath 3.6s ease-in-out infinite}
+  /* LED viền tĩnh */
+  .logo-link::before{
+    content:""; position:absolute; inset:0; border-radius:16px; padding:1px;
+    background: conic-gradient(from 0turn, var(--brand), var(--brand-2), var(--brand-3), var(--brand));
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none;
+  }
+  /* Shine động lướt qua (không xoay) */
+  .logo-link::after{
+    content:""; position:absolute; inset:0; background:
+      linear-gradient(115deg, transparent 0%, rgba(255,255,255,.65) 30%, transparent 60%);
+    transform: translateX(-120%); animation: shine 3s ease-in-out infinite 1s;
+    pointer-events:none; mix-blend-mode:overlay;
+  }
+  .logo-svg{width:72%; opacity:.98; filter: drop-shadow(0 4px 10px rgba(14,165,233,.25))}
+  @keyframes shine{ 50%{ transform: translateX(120%) } }
+  @keyframes breath{ 0%,100%{ transform:scale(1)} 50%{ transform:scale(1.03)} }
+
+  .wordmark{ font-weight:900; letter-spacing:.2px; line-height:1.1 }
+  .wordmark b{ background: linear-gradient(90deg, var(--brand), var(--brand-2)); -webkit-background-clip:text; background-clip:text; color:transparent }
+  .wordmark small{display:block; color:var(--muted); font-weight:600}
+
+  .cta{margin-left:auto; display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+  .chip{ border:1px solid #e5e7eb; background: #ffffffaa; backdrop-filter:blur(8px); padding:8px 12px; border-radius:999px; font-weight:700 }
+  .chip a{ color:var(--brand); text-decoration:none }
+
+  /* ===== Grid / Cards ===== */
+  .row{display:grid; gap:18px; grid-template-columns:1fr}
+  @media (min-width:740px){ .row{ grid-template-columns:repeat(2,1fr)} }
+  @media (min-width:1080px){ .row{ grid-template-columns:repeat(3,1fr)} }
+
+  .card{
+    position:relative; border-radius:var(--radius); background:var(--surface);
+    box-shadow: var(--shadow); padding:18px; overflow:hidden;
+    transform: translateY(8px); opacity:0; transition: transform .45s cubic-bezier(.2,.8,.2,1), opacity .45s;
+  }
+  .card.show{ transform:none; opacity:1 }
+  /* LED viền tĩnh cho card (không xoay) */
+  .card::before{
+    content:""; position:absolute; inset:0; border-radius:inherit; padding:1px; pointer-events:none;
+    background: conic-gradient(from 0turn, var(--brand), var(--brand-2), var(--brand-3), var(--brand));
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude;
+  }
+  .card h3{margin:0 0 10px; font-size:1.06rem; display:flex; gap:10px; align-items:center}
+  .desc{margin:0 0 10px; color:var(--muted)}
+  .grid{display:grid; gap:12px}
+  .field{display:flex; gap:10px; align-items:stretch}
+  .input{
+    width:100%; padding:12px 14px; border-radius:12px; font:inherit;
+    border:1px solid #e5e7eb; background:#ffffff; color:var(--ink);
+    transition:border .2s, box-shadow .2s; resize:vertical;
+  }
+  textarea.input{min-height:96px}
+  .input:focus{ border-color: var(--brand); box-shadow:0 0 0 4px var(--ring) }
+
+  .btn{
+    position:relative; border:none; border-radius:12px; font-weight:900; letter-spacing:.2px;
+    padding:12px 16px; cursor:pointer; color:#04131a;
+    background: linear-gradient(90deg, var(--brand), var(--brand-2));
+    transition: transform .05s ease, filter .2s ease;
+  }
+  .btn:active{ transform: translateY(1px) scale(.99) }
+  .btn .pulse{ position:absolute; inset:-20%; background:radial-gradient(200px 200px at var(--x) var(--y), #ffffff66, transparent 60%); opacity:0; transition:opacity .12s }
+  .btn:hover .pulse{ opacity:.6 }
+
+  .toolbar{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+  .tbtn{ border:1px solid #e5e7eb; background:#fff; color:var(--ink); border-radius:10px; padding:10px 12px; cursor:pointer; font-weight:700 }
+  .tbtn:hover{ box-shadow:0 0 0 3px var(--ring) }
+
+  .history{list-style:none; padding:0; margin:8px 0 0; max-height:260px; overflow:auto}
+  .history li{ display:flex; gap:8px; align-items:flex-start; padding:9px 10px; margin:8px 0; border-radius:12px; border:1px dashed #e5e7eb; background:#f8fafc }
+  .tag{ font-size:.76rem; padding:2px 8px; border-radius:999px; font-weight:800; color:#04131a; background:linear-gradient(90deg, var(--brand), var(--brand-3)) }
+  .time{ margin-left:auto; opacity:.6; font-size:.82rem }
+
+  .toast{ position:fixed; right:20px; bottom:20px; z-index:100; display:grid; gap:10px; width:min(380px, calc(100vw - 40px)) }
+  .toast .t{ background:#fff; border:1px solid #e5e7eb; border-left:6px solid var(--brand-2); padding:12px 14px; border-radius:14px; box-shadow:var(--shadow); display:grid; gap:6px; animation:popin .22s ease-out }
+  .t strong{display:block} .t small{color:var(--muted)}
+  @keyframes popin{from{transform:translateY(8px); opacity:0}}
+
+  .section-title{ margin:22px 0 8px; font-size:.96rem; color:var(--muted); font-weight:900; text-transform:uppercase; letter-spacing:.12rem }
+  .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace }
+
+  footer{margin:26px auto 40px; max-width:1140px; color:var(--muted); font-size:.9rem; padding:0 24px}
+</style>
+</head>
+<body>
+  <!-- Sakura canvas -->
+  <canvas id="sakura" aria-hidden="true" style="position:fixed; inset:0; z-index:0; pointer-events:none;"></canvas>
+
+  <header>
+    <div class="brand container">
+      <!-- Logo TP: click mở trang -->
+      <a class="logo-link logo-wrap" href="https://devtanphat.online" target="_blank" rel="noopener" aria-label="DEV TAN PHAT — devtanphat.online">
+        <svg class="logo-svg" viewBox="0 0 64 64" role="img" aria-label="TP">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#0ea5e9"/><stop offset="1" stop-color="#8b5cf6"/>
+            </linearGradient>
+          </defs>
+          <!-- T -->
+          <rect x="10" y="14" width="30" height="8" rx="4" fill="url(#g1)"/>
+          <rect x="22" y="22" width="8" height="28" rx="4" fill="url(#g1)"/>
+          <!-- P -->
+          <rect x="40" y="14" width="8" height="36" rx="4" fill="#10b981"/>
+          <path d="M48 14h8c7 0 12 5 12 12s-5 12-12 12h-8V14Zm8 18c3.6 0 6-2.4 6-6s-2.4-6-6-6h-2v12h2Z"
+                fill="#0ea5e9"/>
+          <!-- Outline glow (subtle, no rotation) -->
+          <g opacity=".2">
+            <rect x="9" y="13" width="50" height="38" rx="10" fill="none" stroke="url(#g1)" stroke-width="2"
+                  stroke-dasharray="6 10">
+              <animate attributeName="stroke-dashoffset" dur="4s" values="0;16" repeatCount="indefinite"/>
+            </rect>
+          </g>
+        </svg>
+      </a>
+
+      <div class="wordmark">
+        <b>DEV TAN PHAT</b>
+        <small>Website xịn xò • Hiệu ứng công nghệ • LED viền tĩnh</small>
+      </div>
+
+      <div class="cta">
+        <div class="chip">Telegram: <a href="https://t.me/useriamtp" target="_blank" rel="noopener">@useriamtp</a></div>
+        <div class="chip">Developed by: <strong>Trần Tấn Phát</strong></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" id="app" style="position:relative; z-index:1">
+    <div class="section-title">Công cụ</div>
+    <div class="row">
+      <!-- ENTER COOKIES -->
+      <section class="card" id="card-cookies">
+        <h3><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 12A8 8 0 1 1 8 4a4 4 0 0 0 4 4a4 4 0 0 0 4 4a4 4 0 0 0 4 4Z"/></svg> ENTER COOKIES</h3>
+        <p class="desc">Nhập chuỗi Cookies.</p>
+        <form class="grid" id="cookiesForm" autocomplete="off">
+          <label class="mono" for="cookiesInput" style="color:var(--muted)">Chuỗi cookies</label>
+          <div class="field">
+            <textarea class="input mono" id="cookiesInput" placeholder="Nhập Cookies bạn cần thêm..." spellcheck="false"></textarea>
+            <button class="btn" type="submit"><span>Gửi</span><span class="pulse"></span></button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ADD MAIL -->
+      <section class="card" id="card-addmail">
+        <h3><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m20 6-8 5-8-5v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2z"/></svg> ADD MAIL</h3>
+        <p class="desc">Nhập email cần thêm.</p>
+        <form class="grid" id="addMailForm" autocomplete="off">
+          <label class="mono" for="addMailInput" style="color:var(--muted)">Email</label>
+          <div class="field">
+            <input class="input" id="addMailInput" type="text" placeholder="Nhập EMAIL bạn cần thêm..." />
+            <button class="btn" type="submit"><span>Thêm</span><span class="pulse"></span></button>
+          </div>
+        </form>
+      </section>
+
+      <!-- XÓA PHONE -->
+      <section class="card" id="card-delphone">
+        <h3><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25a11 11 0 0 0 3.5.6a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 8a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1a11 11 0 0 0 .6 3.5a1 1 0 0 1-.25 1Z"/></svg> XÓA PHONE</h3>
+        <p class="desc">Nhập số điện thoại cần xóa.</p>
+        <form class="grid" id="delPhoneForm" autocomplete="off">
+          <label class="mono" for="delPhoneInput" style="color:var(--muted)">Số điện thoại</label>
+          <div class="field">
+            <input class="input" id="delPhoneInput" type="text" placeholder="Nhập PHONE bạn cần xóa..." />
+            <button class="btn" type="submit"><span>Xóa</span><span class="pulse"></span></button>
+          </div>
+        </form>
+      </section>
+
+      <!-- XÓA MAIL -->
+      <section class="card" id="card-delmail">
+        <h3><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 6 12 11 4 6"/></svg> XÓA MAIL</h3>
+        <p class="desc">Nhập email cần xóa.</p>
+        <form class="grid" id="delMailForm" autocomplete="off">
+          <label class="mono" for="delMailInput" style="color:var(--muted)">Email</label>
+          <div class="field">
+            <input class="input" id="delMailInput" type="text" placeholder="Nhập EMAIL bạn cần xóa..." />
+            <button class="btn" type="submit"><span>Xóa</span><span class="pulse"></span></button>
+          </div>
+        </form>
+      </section>
+
+      <!-- CHANGE PASS -->
+      <section class="card" id="card-changepass">
+        <h3><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1a5 5 0 0 0-5 5v3H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-2V6a5 5 0 0 0-5-5Z"/></svg> CHANGE PASS</h3>
+        <p class="desc">Nhập mật khẩu mới.</p>
+        <form class="grid" id="changePassForm" autocomplete="off">
+          <label class="mono" for="changePassInput" style="color:var(--muted)">Mật khẩu mới</label>
+          <div class="field">
+            <input class="input" id="changePassInput" type="password" placeholder="Nhập PASS bạn cần đổi..." />
+            <button class="btn" type="submit"><span>Đổi</span><span class="pulse"></span></button>
+          </div>
+        </form>
+      </section>
+
+      <!-- History -->
+      <section class="card" id="card-history" style="grid-column:1/-1">
+        <h3>Nhật ký thao tác (local-only)</h3>
+        <p class="desc">Ghi nhận tác vụ tại phiên này.</p>
+        <div class="toolbar">
+          <button class="tbtn" id="exportJson">Xuất lịch sử (.json)</button>
+          <button class="tbtn" id="clearHistory">Xóa lịch sử</button>
+        </div>
+        <ul class="history" id="history"></ul>
+        <p style="color:var(--muted)"><small class="mono">Thông báo: Vui lòng liên hệ với ADMIN để được kích hoạt quyền. Telegram: @useriamtp</small></p>
+      </section>
+    </div>
+
+    <div class="section-title">Ghi chú</div>
+    <section class="card">
+      <p style="color:var(--muted)">
+        Đây là <strong>dịch vụ change via</strong>, mọi dịch vụ
+        <em>“Đều hoạt động hoàn toàn tự động 24/24”</em>. Không kết nối hay can thiệp tài khoản.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">© <span id="y"></span> DEV TAN PHAT. All rights reserved.</div>
+  </footer>
+
+  <div class="toast" id="toast" aria-live="polite"></div>
+
+<script>
+  /* ===== Utilities ===== */
+  const $ = s => document.querySelector(s);
+  const $$ = s => document.querySelectorAll(s);
+  const toastBox = $('#toast');
+  const historyBox = $('#history');
+  $('#y').textContent = new Date().getFullYear();
+
+  // Reveal cards
+  const io = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('show') }), {threshold:.16});
+  $$('.card').forEach(c => io.observe(c));
+
+  // Button ripple
+  $$('.btn').forEach(b=>{
+    b.addEventListener('pointermove', e=>{
+      const r=b.querySelector('.pulse'), rect=b.getBoundingClientRect();
+      const x=((e.clientX-rect.left)/rect.width)*100+'%';
+      const y=((e.clientY-rect.top)/rect.height)*100+'%';
+      r.style.setProperty('--x', x); r.style.setProperty('--y', y);
+    });
+  });
+
+  function escapeHtml(s=''){ return s.replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])) }
+  function now(){ const t=new Date(), z=n=>String(n).padStart(2,'0'); return `${z(t.getHours())}:${z(t.getMinutes())}:${z(t.getSeconds())}` }
+  function pushHistory(kind,value){
+    const li=document.createElement('li');
+    li.innerHTML=`<span class="tag">${kind}</span>
+                  <span class="mono" style="word-break:break-all">${escapeHtml(value||'(trống)')}</span>
+                  <span class="time">${now()}</span>`;
+    historyBox.prepend(li);
+  }
+  function toast(title, detail){
+    const t=document.createElement('div');
+    t.className='t';
+    t.innerHTML=`<strong>${title}</strong><small>${detail}</small>`;
+    toastBox.appendChild(t);
+    setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(6px)'; setTimeout(()=>t.remove(), 260) }, 3600);
+  }
+
+  // Tiny burst at button center
+  function burstAt(x,y){
+    const n=10, frag=document.createDocumentFragment(), root=document.body;
+    for(let i=0;i<n;i++){
+      const d=document.createElement('i');
+      const ang=Math.random()*Math.PI*2, dist=8+Math.random()*22;
+      const tx=Math.cos(ang)*dist, ty=Math.sin(ang)*dist;
+      d.style.position='fixed'; d.style.left=x+'px'; d.style.top=y+'px';
+      d.style.width=d.style.height=(3+Math.random()*3)+'px';
+      d.style.borderRadius='999px';
+      d.style.background= i%2? 'var(--brand)' : 'var(--brand-2)';
+      d.style.opacity='0.95'; d.style.pointerEvents='none';
+      d.style.transition='transform .45s ease, opacity .45s ease';
+      requestAnimationFrame(()=>{ d.style.transform=`translate(${tx}px, ${ty}px)`; d.style.opacity='0'; });
+      setTimeout(()=>d.remove(), 480);
+      frag.appendChild(d);
+    }
+    root.appendChild(frag);
+  }
+  const ADMIN_MSG='Vui lòng liên hệ với ADMIN để được kích hoạt quyền. Telegram: @useriamtp';
+
+  /* ===== Forms ===== */
+  function attachSimpleForm(formSel, inputSel, tag, mask=false){
+    $(formSel).addEventListener('submit', e=>{
+      e.preventDefault();
+      const el=$(inputSel); const v=(el.value ?? '').trim();
+      if(!v){ toast('Thiếu dữ liệu', 'Vui lòng nhập thông tin.'); return; }
+      pushHistory(tag, mask ? '••••••••' : v);
+      toast(`Đã ghi nhận ${tag}`, ADMIN_MSG);
+      const r=e.submitter?.getBoundingClientRect?.();
+      if(r) burstAt(r.left+r.width/2, r.top+r.height/2);
+      e.target.reset();
+    });
+  }
+  attachSimpleForm('#cookiesForm',   '#cookiesInput',   'COOKIES');
+  attachSimpleForm('#addMailForm',   '#addMailInput',   'ADD MAIL');
+  attachSimpleForm('#delPhoneForm',  '#delPhoneInput',  'XÓA PHONE');
+  attachSimpleForm('#delMailForm',   '#delMailInput',   'XÓA MAIL');
+  attachSimpleForm('#changePassForm','#changePassInput','CHANGE PASS', true);
+
+  // Enter submit (Shift+Enter to newline for textarea)
+  $$('input, textarea').forEach(inp=>{
+    inp.addEventListener('keydown', ev=>{
+      if(ev.key==='Enter' && !(ev.shiftKey||inp.tagName==='TEXTAREA')){
+        ev.preventDefault();
+        inp.closest('form')?.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}));
+      }
+    });
+  });
+
+  /* ===== Sakura (petal) ===== */
+  const cvs=document.getElementById('sakura'), ctx=cvs.getContext('2d',{alpha:true});
+  let W=0,H=0, petals=[];
+  function resize(){ W=innerWidth; H=innerHeight; cvs.width=W; cvs.height=H; }
+  resize(); addEventListener('resize', resize);
+  function makePetal(){
+    return { x: Math.random()*W, y: -10 - Math.random()*H, s: .6+Math.random()*1.2,
+      vy:.6+Math.random()*1.2, vx:(Math.random()-.5)*0.6, rot:Math.random()*Math.PI*2, vr:(Math.random()-.5)*0.02,
+      pink:`rgba(${230+Math.floor(Math.random()*20)}, ${150+Math.floor(Math.random()*30)}, ${170+Math.floor(Math.random()*35)}, 0.75)` }
+  }
+  const PETAL_COUNT = Math.min(60, Math.floor(W/20));
+  petals = Array.from({length: PETAL_COUNT}, makePetal);
+  function drawPetal(p){
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.scale(p.s, p.s);
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.quadraticCurveTo(10,-6, 0,-18); ctx.quadraticCurveTo(-10,-6, 0,0);
+    ctx.closePath(); ctx.fillStyle=p.pink; ctx.fill();
+    ctx.globalAlpha=0.25; ctx.beginPath(); ctx.ellipse(-2,-10, 3,5, 0, 0, Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
+    ctx.restore();
+  }
+  function tick(){
+    ctx.clearRect(0,0,W,H);
+    for(const p of petals){
+      p.x += p.vx + Math.sin((p.y+p.rot)*0.01)*0.1; p.y += p.vy; p.rot += p.vr;
+      if(p.y > H+12) Object.assign(p, makePetal(), {y:-12, x:Math.random()*W});
+      drawPetal(p);
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  /* ===== Export / Clear history ===== */
+  $('#exportJson').addEventListener('click', ()=>{
+    const items=[...$$('#history li')].reverse().map(li=>({
+      type: li.querySelector('.tag')?.textContent || '',
+      value: li.querySelector('.mono')?.textContent || '',
+      time:  li.querySelector('.time')?.textContent || ''
+    }));
+    const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(), items}, null, 2)], {type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download='dev-tanphat-history.json';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 500);
+    toast('Đã xuất lịch sử', 'Tệp: dev-tanphat-history.json');
+  });
+  $('#clearHistory').addEventListener('click', ()=>{ historyBox.innerHTML=''; toast('Đã xóa lịch sử', 'Nhật ký đã được làm trống.'); });
+</script>
+</body>
+</html>
